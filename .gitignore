@@ -1,0 +1,4 @@
+.env
+openrc
+.terraform
+terraform.tfstate
