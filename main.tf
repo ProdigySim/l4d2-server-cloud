@@ -54,6 +54,16 @@ resource "openstack_networking_secgroup_rule_v2" "l4d2-incoming-rule" {
   security_group_id = openstack_networking_secgroup_v2.l4d2-incoming.id
 }
 
+resource "openstack_networking_secgroup_rule_v2" "l4d2-incoming-tcp" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 27015
+  port_range_max    = 27015
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = openstack_networking_secgroup_v2.l4d2-incoming.id
+}
+
 resource "openstack_compute_instance_v2" "basic" {
   name       = "basic"
   image_name = "ubuntu-24.04-x86_64"
