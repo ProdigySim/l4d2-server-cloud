@@ -40,12 +40,31 @@ resource "openstack_networking_secgroup_rule_v2" "ssh-incoming-rule" {
   security_group_id = openstack_networking_secgroup_v2.ssh-incoming.id
 }
 
+resource "openstack_networking_secgroup_v2" "l4d2-incoming" {
+  name        = "l4d2-incoming"
+  description = "Allow L4D2 incoming from any ip"
+}
+resource "openstack_networking_secgroup_rule_v2" "l4d2-incoming-rule" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "udp"
+  port_range_min    = 27015
+  port_range_max    = 27015
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = openstack_networking_secgroup_v2.l4d2-incoming.id
+}
+
 resource "openstack_compute_instance_v2" "basic" {
-  name            = "basic"
-  image_name      = "ubuntu-24.04-x86_64"
-  flavor_id       = data.openstack_compute_flavor_v2.m2new.id
-  key_pair        = openstack_compute_keypair_v2.test-keypair.id
-  security_groups = ["default", openstack_networking_secgroup_v2.ssh-incoming.name]
+  name       = "basic"
+  image_name = "ubuntu-24.04-x86_64"
+  flavor_id  = data.openstack_compute_flavor_v2.m2new.id
+  key_pair   = openstack_compute_keypair_v2.test-keypair.id
+  security_groups = [
+    "default",
+    openstack_networking_secgroup_v2.ssh-incoming.name,
+    openstack_networking_secgroup_v2.l4d2-incoming.name
+  ]
+  user_data = file("cloud_init_l4d2.yml")
 
   metadata = {
     this = "that"

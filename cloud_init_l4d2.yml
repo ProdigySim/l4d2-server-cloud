@@ -1,0 +1,69 @@
+#cloud-config
+runcmd:
+  - dpkg --add-architecture i386
+  - apt-get -y update
+  - apt-get -y upgrade
+  - apt-get -y install curl net-tools lib32stdc++6 libc6:i386 locales unzip lib32z1 screen gdb
+  - locale-gen en_US.UTF-8
+  - update-locale LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 LC_ALL=en_US.UTF-8
+  - dpkg-reconfigure --frontend=noninteractive locales
+  - apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+  - [su, l4d2, -c, "cd ~ && curl https://media.steampowered.com/installer/steamcmd_linux.tar.gz | tar -xvz && ./update.sh"]
+
+
+users:
+  - default
+  - name: l4d2
+    shell: /bin/bash
+    lock_passwd: true
+    ssh_authorized_keys: 
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDGHhx+SvinGWrZZrtjB6MjdnhhO0+hCdRR1b1NuajOQ+LUKOJiVXYaAzLEKsL8YO8UGNANuscz4PTs4TPOKk5tQFT7AHN4x/7n/bqISxQ7Lj8BkekRTxtq+kil0e19uobB8xldQiHYauxuB2/tRN/JRSUMIN2c4ARX1xJ5fBD9xYaUrEzXy27EKpUGV0DGPRGIInpdMLinuJZvLpyjLYb1MkmzOYqpQVZdvDvs7B6wdIg/wPsz0aWqpcJXXEznQKME7IomZNEsB+ERnFwj6XOteJGoHUQsfItjXU9C1z+AZC5gMdpsOcPD4pGtErp01ECAicjCvI/o6wOJ90drJ9QP
+  
+
+write_files:
+  - path: /home/l4d2/.bashrc
+    append: true
+    defer: true
+    content: |
+      export SERVER=/home/l4d2/Steam/steamapps/common
+  - path: /home/l4d2/l4d2_ds.txt
+    defer: true
+    content: |
+      force_install_dir ./Steam/steamapps/common/l4d2
+      login anonymous
+      @sSteamCmdForcePlatformType linux
+      app_update 222860 validate
+      quit
+    owner: 'l4d2:l4d2'
+    permissions: '0644'
+  - path: /home/l4d2/l4d2_ds_win.txt
+    defer: true
+    content: |
+      force_install_dir ./Steam/steamapps/common/l4d2
+      login anonymous
+      @sSteamCmdForcePlatformType windows
+      app_update 222860 validate
+      quit
+    owner: 'l4d2:l4d2'
+    permissions: '0644'
+  - path: /home/l4d2/update.sh
+    defer: true
+    content: |
+      #!/bin/sh
+
+      # Windows needs to run first due to https://github.com/ValveSoftware/steam-for-linux/issues/11522
+      ./steamcmd.sh +runscript l4d2_ds_win.txt
+      ./steamcmd.sh +runscript l4d2_ds.txt
+
+    owner: 'l4d2:l4d2'
+    permissions: '0755'
+  - path: /home/l4d2/l4d2.sh
+    defer: true
+    content: |
+      #!/bin/bash
+      cd /home/l4d2/Steam/steamapps/common/l4d2
+      ./srcds_run -norestart -game left4dead2
+      ./srcds_run -game left4dead2
+    owner: 'l4d2:l4d2'
+    permissions: '0755'
+  
