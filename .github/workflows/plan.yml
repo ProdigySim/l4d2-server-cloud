@@ -1,0 +1,22 @@
+name: Plan
+on: push
+
+jobs:
+  plan:
+    name: Plan IntoVPS
+    environment: IntoVPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: false
+      - run: tofu init
+      - run: tofu plan
+        env:
+          TF_VAR_ssh_allowed_ip: ${{ secrets.SSH_ALLOWED_IP }}
+          OS_AUTH_URL: ${{ secrets.OS_AUTH_URL }}
+          OS_USERNAME: ${{ secrets.OS_USERNAME }}
+          OS_PASSWORD: ${{ secrets.OS_PASSWORD }}
+          OS_PROJECT_ID: ${{ secrets.OS_PROJECT_ID }}
+          OS_REGION_NAME: ${{ secrets.OS_REGION_NAME }}
